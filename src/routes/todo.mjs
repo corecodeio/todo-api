@@ -6,7 +6,12 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const toDos = await get('SELECT * FROM todos', [], true);
-    res.json({ message: 'To-dos retrieved successfully', data: toDos });
+    const data = toDos.map((toDo) => ({
+      title: toDo.title,
+      description: toDo.description,
+      isDone: Boolean(toDo.is_done),
+    }));
+    res.json({ message: 'To-dos retrieved successfully', data });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -63,9 +68,12 @@ router.patch('/:id', async (req, res) => {
       return res.status(404).json({ message: 'To-do not found' });
     }
     const { title, description, isDone: is_done } = req.body;
+    if (typeof is_done !== 'boolean') {
+      return res.status(400).json({ message: 'isDone expected to be boolean' });
+    }
     await run(
       'UPDATE todos SET title = ?, description = ?, is_done = ? WHERE id = ?',
-      [title, description, is_done, id]
+      [title, description, Number(is_done), id]
     );
     res.json({ message: 'To-do updated successfully' });
   } catch (error) {
