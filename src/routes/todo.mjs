@@ -7,6 +7,7 @@ router.get('/', async (req, res) => {
   try {
     const toDos = await get('SELECT * FROM todos', [], true);
     const data = toDos.map((toDo) => ({
+      id: toDo.id,
       title: toDo.title,
       description: toDo.description,
       isDone: Boolean(toDo.is_done),
@@ -24,13 +25,14 @@ router.get('/', async (req, res) => {
 router.post('/', validator, async (req, res) => {
   try {
     const { title, description } = req.body;
-    await run('INSERT INTO todos (title, description) VALUES (?,?)', [
-      title,
-      description,
-    ]);
+    const data = await run(
+      'INSERT INTO todos (title, description) VALUES (?,?)',
+      [title, description]
+    );
     res.json({
       message: 'To-do created successfully',
       toDo: {
+        id: data.lastID,
         title,
         description,
         isDone: false,
@@ -55,7 +57,7 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ message: 'To-do not found' });
     }
     await run('DELETE FROM todos WHERE id = ?', [id]);
-    res.json({ message: 'To-do deleted successfully' });
+    res.json({ message: 'To-do deleted successfully', toDo: toDo[0] });
   } catch (error) {
     console.error(error);
     res.status(500).json({

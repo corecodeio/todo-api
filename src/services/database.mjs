@@ -9,11 +9,11 @@ const db = new sqlite3.Database(dbPath);
 
 const run = (query, params = []) =>
   new Promise((resolve, reject) => {
-    db.run(query, params, (err) => {
+    db.run(query, params, function (err) {
       if (err) {
         return reject(err);
       }
-      resolve(true);
+      resolve({ status: true, lastID: this.lastID, changes: this.changes });
     });
   });
 
