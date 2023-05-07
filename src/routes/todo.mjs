@@ -28,7 +28,14 @@ router.post('/', validator, async (req, res) => {
       title,
       description,
     ]);
-    res.json({ message: 'To-do created successfully' });
+    res.json({
+      message: 'To-do created successfully',
+      toDo: {
+        title,
+        description,
+        isDone: false,
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
