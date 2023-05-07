@@ -4,13 +4,16 @@ import { join } from 'path';
 
 import { initDB } from './services/database.mjs';
 
+import health from './middlewares/health.mjs';
+
 import todoRoutes from './routes/todo.mjs';
 
-const port = process.env.APP_ENV || 3000;
+const port = process.env.APP_ENV || 8000;
 
 const app = express();
 
 app.use(cors());
+app.use(health);
 app.use(express.json());
 
 const publicPath = join(process.cwd(), 'public');
