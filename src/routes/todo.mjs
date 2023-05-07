@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { run, get } from '../services/database.mjs';
-import validator from '../middlewares/validator.mjs';
+import { postValidator, patchValidator } from '../middlewares/validator.mjs';
 const router = Router();
 
 router.get('/', async (req, res) => {
@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', validator, async (req, res) => {
+router.post('/', postValidator, async (req, res) => {
   try {
     const { title, description } = req.body;
     const data = await run(
@@ -76,29 +76,38 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', patchValidator, async (req, res) => {
   try {
     const {
       params: { id },
     } = req;
-    const toDo = await get('SELECT id FROM todos WHERE id = ?', [id]);
+    const toDo = await get('SELECT * FROM todos WHERE id = ?', [id]);
     if (!Array.isArray(toDo) || toDo.length === 0) {
       return res.status(404).json({ message: 'To-do not found' });
     }
     const { title, description, isDone: is_done } = req.body;
-    if (typeof is_done !== 'boolean') {
-      return res.status(400).json({ message: 'isDone expected to be boolean' });
-    }
+    const updatedFields = Object.entries({
+      title,
+      description,
+      is_done,
+    }).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc.push(`${key} = ?`);
+      }
+      return acc;
+    }, []);
     await run(
-      'UPDATE todos SET title = ?, description = ?, is_done = ? WHERE id = ?',
-      [title, description, Number(is_done), id]
+      `UPDATE todos SET ${updatedFields} WHERE id = ?`,
+      Object.values({ title, description, is_done })
+        .filter((value) => value !== undefined)
+        .concat(id)
     );
     res.json({
       message: 'To-do updated successfully',
       toDo: {
         id: Number(id),
-        title,
-        description,
+        title: title || toDo[0].title,
+        description: description || toDo[0].description,
         isDone: Boolean(is_done),
       },
     });
