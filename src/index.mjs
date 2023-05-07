@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import { join } from 'path';
 
 import { initDB } from './services/database.mjs';
 
@@ -12,7 +13,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/to-dos', todoRoutes);
+const publicPath = join(process.cwd(), 'public');
+app.use(express.static(publicPath));
+
+app.use('/api', todoRoutes);
 
 try {
   await initDB();
