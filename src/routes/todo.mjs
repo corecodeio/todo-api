@@ -52,12 +52,21 @@ router.delete('/:id', async (req, res) => {
     const {
       params: { id },
     } = req;
-    const toDo = await get('SELECT id FROM todos WHERE id = ?', [id]);
+    const toDo = await get('SELECT * FROM todos WHERE id = ?', [id]);
     if (!Array.isArray(toDo) || toDo.length === 0) {
       return res.status(404).json({ message: 'To-do not found' });
     }
     await run('DELETE FROM todos WHERE id = ?', [id]);
-    res.json({ message: 'To-do deleted successfully', toDo: toDo[0] });
+    const { title, description, is_done: isDone } = toDo[0];
+    res.json({
+      message: 'To-do deleted successfully',
+      toDo: {
+        id: Number(id),
+        title,
+        description,
+        isDone: Boolean(isDone),
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -84,7 +93,15 @@ router.patch('/:id', async (req, res) => {
       'UPDATE todos SET title = ?, description = ?, is_done = ? WHERE id = ?',
       [title, description, Number(is_done), id]
     );
-    res.json({ message: 'To-do updated successfully' });
+    res.json({
+      message: 'To-do updated successfully',
+      toDo: {
+        id: Number(id),
+        title,
+        description,
+        isDone: Boolean(is_done),
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
