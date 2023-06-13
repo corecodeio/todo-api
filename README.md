@@ -52,3 +52,7 @@ Congratulations! You have successfully set up the project on your local machine.
 ## Online Documentation
 
 You can find the documentation [Here](https://todo-api-h8ov.onrender.com/)
+
+## For Techleads ⚠️
+
+This repository includes inside the `src/index.mjs` file the use of `public` folder, this will be not required for the developers in the bootcamp. This is only used here to show the documentation.
